@@ -3,8 +3,11 @@ import requests
 from github import Github
 import pickle
 
-access_token='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'
-headers = {'Authorization':"Token "+access_token} # we need header to obtain more data
+with open('access_token.txt') as f:
+    contents = f.read()
+    access_token = contents.split('\n', 1)[0]
+headers = {'Authorization':"Token "+access_token[0]} # we need header to obtain more data
+all_sig_names = []
 
 def collect_data(repo_name_list):
     # set up user name we want to research and get your own access_token , then create header
@@ -15,11 +18,16 @@ def collect_data(repo_name_list):
         # github is dumb and won't let you load more than 100 items per page
         while num_ppl_per_page > 0:
             url = f"https://api.github.com/repos/{repo_name}/contributors?page={pg_num}&per_page=100&anon=true"
+            print(pg_num)
             pg_num += 1
             contributors = requests.get(url,headers=headers).json()
             num_ppl_per_page = len(contributors)
             all_contributors.append(contributors)
-
+            print(url)
+            print(num_ppl_per_page)
+            print(contributors)
+            x=input('pause')
+        print(all_contributors)
         #pickle.dump(all_contributors, open('all_contributors.pickle', 'wb'))
         #all_contributors = pickle.load(open("all_contributors","rb"))
 
@@ -38,6 +46,7 @@ def collect_data(repo_name_list):
                     counts.append(count)
                     if count > 5:
                         sig_names.append(name)
+                        all_sig_names.append(name)
                 except:
                     name=contributor['name']
                     count=contributor['contributions']
@@ -62,7 +71,11 @@ def collect_data(repo_name_list):
         # save mydata
         #mydata.to_csv("contributor_data/" + repo_name + "_contributors.csv")
 
-repo_name = ['gvalkov/python-evdev',
+all_sig_names = list(set(all_sig_names))
+with open('all_sig_names.pkl', 'wb') as f:
+    pickle.dump(all_sig_names, f)
+
+repo_name = [
              'pypa/pip',
              #'pandas-dev/pandas',
              #'tensorflow/tensorflow',
