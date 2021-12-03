@@ -6,8 +6,11 @@ import pickle
 with open('access_token.txt') as f:
     contents = f.read()
     access_token = contents.split('\n', 1)[0]
-headers = {'Authorization':"Token "+access_token[0]} # we need header to obtain more data
+headers = {'Authorization':"Token "+access_token} # we need header to obtain more data
 all_sig_names = []
+
+fn = open("name_file.txt", "w")
+fn.close()
 
 def collect_data(repo_name_list):
     # set up user name we want to research and get your own access_token , then create header
@@ -18,16 +21,10 @@ def collect_data(repo_name_list):
         # github is dumb and won't let you load more than 100 items per page
         while num_ppl_per_page > 0:
             url = f"https://api.github.com/repos/{repo_name}/contributors?page={pg_num}&per_page=100&anon=true"
-            print(pg_num)
             pg_num += 1
             contributors = requests.get(url,headers=headers).json()
             num_ppl_per_page = len(contributors)
             all_contributors.append(contributors)
-            print(url)
-            print(num_ppl_per_page)
-            print(contributors)
-            x=input('pause')
-        print(all_contributors)
         #pickle.dump(all_contributors, open('all_contributors.pickle', 'wb'))
         #all_contributors = pickle.load(open("all_contributors","rb"))
 
@@ -70,21 +67,26 @@ def collect_data(repo_name_list):
         mydata=mydata.dropna(axis=0).reset_index().drop(columns='index')
         # save mydata
         #mydata.to_csv("contributor_data/" + repo_name + "_contributors.csv")
+    return(all_sig_names)
 
-all_sig_names = list(set(all_sig_names))
-with open('all_sig_names.pkl', 'wb') as f:
-    pickle.dump(all_sig_names, f)
 
 repo_name = [
              'pypa/pip',
-             #'pandas-dev/pandas',
-             #'tensorflow/tensorflow',
-             #'scikit-learn/scikit-learn',
-             #'nilearn/nilearn',
-             #'Theano/Theano',
-             #'matplotlib/matplotlib',
-             #'keras-team/keras',
-             #'opencv/opencv',
-             #'pytorch/pytorch',
+             'pandas-dev/pandas',
+             'tensorflow/tensorflow',
+             'scikit-learn/scikit-learn',
+             'nilearn/nilearn',
+             'Theano/Theano',
+             'matplotlib/matplotlib',
+             'keras-team/keras',
+             'opencv/opencv',
+             'pytorch/pytorch',
              ]
-collect_data(repo_name)
+all_sig_names = collect_data(repo_name)
+
+print(all_sig_names)
+print('')
+all_sig_names = list(set(all_sig_names))
+
+print(all_sig_names)
+pickle.dump(all_sig_names, open('all_sig_names.pickle', 'wb'))
