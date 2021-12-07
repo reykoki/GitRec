@@ -1,3 +1,4 @@
+import copy
 import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.algorithms import bipartite
@@ -9,16 +10,33 @@ repos = {'khughitt': ['pandas-dev/pandas', 'conda-forge/staged-recipes'], 'skyli
 g = nx.Graph(repos)
 B = g
 
-print(nx.is_connected(B))
 
 components = sorted(nx.connected_components(B), key=len, reverse=True)
 largest_component = components[0]
 C = B.subgraph(largest_component)
 
-print(nx.is_connected(C))
 
 X, Y = bipartite.sets(C)
-print(X)
+
+G = nx.Graph()
+
+for repo in Y:
+    repo = str(repo)
+    contrs = C.neighbors(repo)
+    contr_list = [n for n in contrs]
+    for user in contr_list:
+        usr_list = copy.deepcopy(contr_list)
+        usr_list.remove(user)
+        # iterate over other contributors and add edges 
+        for other_user in usr_list:
+            if G.has_edge(other_user, user):
+                G[user][other_user]['weight'] += 1
+            else:
+                G.add_edge(other_user, user, weight=0)
+
+
+
+
 pos = dict()
 pos.update( (n, (1, i)) for i, n in enumerate(X) ) # put nodes from X at x=1
 pos.update( (n, (2, i)) for i, n in enumerate(Y) ) # put nodes from Y at x=2
