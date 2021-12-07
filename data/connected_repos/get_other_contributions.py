@@ -48,7 +48,7 @@ def collect_data(usernames, user_repo_data):
         except Exception as e:
             print('\nERROR with user account: ' + user)
             print(e)
-            if hasattr(repos['message']):
+            if 'message' in repos.keys():
                 if 'API rate limit exceeded' in repos['message']:
                     print('\nAPI rate limit exceeded, waiting 30 mins.\n')
                     time.sleep(1800)
